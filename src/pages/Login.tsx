@@ -1,7 +1,11 @@
 import React from 'react';
 import { LoginForm } from '../components/auth/LoginForm';
 
-export function LoginPage() {
+interface LoginPageProps {
+  onRegisterClick: () => void;
+}
+
+export function LoginPage({ onRegisterClick }: LoginPageProps) {
   const handleLogin = (email: string, password: string) => {
     // Handle login logic here
     console.log('Login attempt:', { email, password });
@@ -15,7 +19,7 @@ export function LoginPage() {
           <p className="text-gray-600 text-center mb-6">
             ยินดีต้อนรับ เข้าสู่ระบบเพื่อเริ่มการใช้งานของคุณกัน!
           </p>
-          <LoginForm onSubmit={handleLogin} />
+          <LoginForm onSubmit={handleLogin} onRegisterClick={onRegisterClick} />
         </div>
       </div>
     </div>

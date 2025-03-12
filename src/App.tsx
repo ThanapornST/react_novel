@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Header } from './layouts/Header';
 import { LoginPage } from './pages/Login';
+import { RegisterPage } from './pages/Register';
 import { Logo } from './components/common/Logo';
 
 function App() {
+  const [currentPage, setCurrentPage] = useState<'login' | 'register'>('login');
+
   return (
     <div className="min-h-screen relative">
       {/* Background Image with Pattern Overlay */}
@@ -22,10 +25,14 @@ function App() {
 
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col">
-        <Header />
+        <Header currentPage={currentPage} onPageChange={setCurrentPage} />
         <main className="flex-1 flex flex-col items-center justify-center px-4 gap-8">
           <Logo className="scale-150" />
-          <LoginPage />
+          {currentPage === 'login' ? (
+            <LoginPage onRegisterClick={() => setCurrentPage('register')} />
+          ) : (
+            <RegisterPage onLoginClick={() => setCurrentPage('login')} />
+          )}
         </main>
       </div>
     </div>

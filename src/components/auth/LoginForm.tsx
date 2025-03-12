@@ -3,16 +3,34 @@ import { EyeOff, Eye } from 'lucide-react';
 
 interface LoginFormProps {
   onSubmit: (email: string, password: string) => void;
+  onRegisterClick: () => void;
 }
 
-export function LoginForm({ onSubmit }: LoginFormProps) {
+export function LoginForm({ onSubmit, onRegisterClick }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [touched, setTouched] = useState({
+    email: false,
+    password: false
+  });
+
+  const errors = {
+    email: !email && touched.email ? 'กรุณากรอกอีเมล์' : '',
+    password: !password && touched.password ? 'กรุณากรอกรหัสผ่าน' : ''
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(email, password);
+    setTouched({ email: true, password: true });
+    
+    if (email && password) {
+      onSubmit(email, password);
+    }
+  };
+
+  const handleBlur = (field: 'email' | 'password') => {
+    setTouched(prev => ({ ...prev, [field]: true }));
   };
 
   return (
@@ -23,10 +41,16 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
           <input
             type="email"
             placeholder="Example@gmail.com"
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+              errors.email ? 'border-red-500' : 'border-gray-300'
+            }`}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onBlur={() => handleBlur('email')}
           />
+          {errors.email && (
+            <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+          )}
         </div>
 
         <div>
@@ -35,9 +59,12 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
             <input
               type={showPassword ? "text" : "password"}
               placeholder="123456"
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                errors.password ? 'border-red-500' : 'border-gray-300'
+              }`}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onBlur={() => handleBlur('password')}
             />
             <button
               type="button"
@@ -47,6 +74,9 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
+          {errors.password && (
+            <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+          )}
           <div className="flex justify-end mt-1">
             <button type="button" className="text-sm text-gray-600 hover:underline">
               ลืมรหัสผ่าน?
@@ -75,7 +105,7 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
 
         <p className="text-center text-sm text-gray-600">
           คุณยังไม่มีบัญชีใช่หรือไม่?{' '}
-          <button type="button" className="text-purple-600 hover:underline">
+          <button type="button" onClick={onRegisterClick} className="text-purple-600 hover:underline">
             สมัครสมาชิก
           </button>
         </p>
