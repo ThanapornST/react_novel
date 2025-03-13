@@ -76,16 +76,14 @@ export function RegisterForm({ onSubmit, onLoginClick }: RegisterFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="flex justify-center mb-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="flex justify-center">
         <div className="relative">
-          <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200">
+          <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
             {previewUrl ? (
               <img src={previewUrl} alt="Profile preview" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <Upload className="w-8 h-8 text-gray-400" />
-              </div>
+              <Upload className="w-8 h-8 text-gray-400" />
             )}
           </div>
           <input
@@ -97,127 +95,139 @@ export function RegisterForm({ onSubmit, onLoginClick }: RegisterFormProps) {
           />
           <label
             htmlFor="profile-image"
-            className="absolute bottom-0 right-0 bg-gray-900 text-white p-2 rounded-full cursor-pointer hover:bg-gray-800 transition-colors"
+            className="absolute bottom-0 right-0 p-2 bg-black hover:bg-black/90 text-white rounded-full cursor-pointer transition-colors duration-200"
           >
             <Upload size={16} />
           </label>
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm mb-2">ชื่อ - นามสกุล</label>
+      {/* Form fields with same styling as LoginForm */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">ชื่อ - นามสกุล</label>
         <input
           type="text"
           name="fullName"
           placeholder="Lilly vong"
-          className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-            errors.fullName ? 'border-red-500' : 'border-gray-300'
-          }`}
+          className={`w-full px-4 py-2.5 rounded-lg border ${
+            errors.fullName ? 'border-red-500' : 'border-gray-200'
+          } focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors duration-200`}
           value={formData.fullName}
           onChange={handleInputChange}
           onBlur={() => handleBlur('fullName')}
         />
         {errors.fullName && (
-          <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
+          <p className="text-sm text-red-500">{errors.fullName}</p>
         )}
       </div>
 
-      <div>
-        <label className="block text-sm mb-2">อีเมล์</label>
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">อีเมล์</label>
         <input
           type="email"
           name="email"
           placeholder="Example@gmail.com"
-          className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-            errors.email ? 'border-red-500' : 'border-gray-300'
-          }`}
+          className={`w-full px-4 py-2.5 rounded-lg border ${
+            errors.email ? 'border-red-500' : 'border-gray-200'
+          } focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors duration-200`}
           value={formData.email}
           onChange={handleInputChange}
           onBlur={() => handleBlur('email')}
         />
         {errors.email && (
-          <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+          <p className="text-sm text-red-500">{errors.email}</p>
         )}
       </div>
 
-      <div>
-        <label className="block text-sm mb-2">รหัสผ่าน</label>
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">รหัสผ่าน</label>
         <div className="relative">
           <input
             type={showPassword ? "text" : "password"}
             name="password"
             placeholder="123456"
-            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-              errors.password ? 'border-red-500' : 'border-gray-300'
-            }`}
+            className={`w-full px-4 py-2.5 rounded-lg border ${
+              errors.password ? 'border-red-500' : 'border-gray-200'
+            } focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors duration-200 pr-10`}
             value={formData.password}
             onChange={handleInputChange}
             onBlur={() => handleBlur('password')}
           />
           <button
             type="button"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
             onClick={() => setShowPassword(!showPassword)}
           >
-            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
           </button>
         </div>
         {errors.password && (
-          <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+          <p className="text-sm text-red-500">{errors.password}</p>
         )}
       </div>
 
-      <div>
-        <label className="block text-sm mb-2">ยืนยันรหัสผ่าน</label>
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">ยืนยันรหัสผ่าน</label>
         <div className="relative">
           <input
             type={showConfirmPassword ? "text" : "password"}
             name="confirmPassword"
             placeholder="123456"
-            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-              errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-            }`}
+            className={`w-full px-4 py-2.5 rounded-lg border ${
+              errors.confirmPassword ? 'border-red-500' : 'border-gray-200'
+            } focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors duration-200 pr-10`}
             value={formData.confirmPassword}
             onChange={handleInputChange}
             onBlur={() => handleBlur('confirmPassword')}
           />
           <button
             type="button"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
           >
-            {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            {showConfirmPassword ? <Eye size={16} /> : <EyeOff size={16} />}
           </button>
         </div>
         {errors.confirmPassword && (
-          <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+          <p className="text-sm text-red-500">{errors.confirmPassword}</p>
         )}
       </div>
 
-      <button
-        type="submit"
-        className="w-full bg-gray-900 text-white py-2 rounded-lg hover:bg-gray-800 transition-colors"
+      <button 
+        type="submit" 
+        className="w-full bg-black hover:bg-black/90 text-white py-2.5 rounded-lg font-medium transition-colors duration-200"
       >
         ลงทะเบียน
       </button>
 
-      <div className="text-center text-gray-500">หรือ</div>
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-200"></div>
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-2 bg-white text-gray-500">หรือ</span>
+        </div>
+      </div>
 
-      <button
-        type="button"
-        className="w-full border border-gray-300 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-gray-50 transition-colors"
+      <button 
+        type="button" 
+        className="w-full flex items-center justify-center gap-3 px-4 py-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200"
       >
         <img
           src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_24dp.png"
           alt="Google"
-          className="w-6 h-6 object-contain"
+          className="w-5 h-5 object-contain"
         />
-        <span>เข้าสู่ระบบด้วย Google</span>
+        <span className="text-gray-700">เข้าสู่ระบบด้วย Google</span>
       </button>
 
-      <p className="text-center text-sm text-gray-600">
+      <p className="text-center text-sm text-gray-500">
         มีบัญชีอยู่แล้ว?{' '}
-        <button type="button" onClick={onLoginClick} className="text-purple-600 hover:underline">
+        <button 
+          type="button" 
+          onClick={onLoginClick} 
+          className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors duration-200"
+        >
           เข้าสู่ระบบ
         </button>
       </p>
