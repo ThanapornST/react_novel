@@ -1,132 +1,201 @@
-import React from 'react';
-import { LogOut, LayoutDashboard, Users, Settings, FolderGit2, Bell, ChevronRight, Star, Activity } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Play, Search, Bell, LogOut } from 'lucide-react';
+import { Logo } from '../components/common/Logo';
+import { auth } from '../lib/firebase';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 export function HomePage() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+      } else {
+        navigate('/login');
+      }
+    });
+
+    return () => unsubscribe();
+  }, [navigate]);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  if (!user) {
+    return null;
+  }
+
   return (
-    <div className="min-h-screen bg-[conic-gradient(at_top_right,_var(--tw-gradient-stops))] from-indigo-700 via-purple-700 to-pink-700">
-      <nav className="bg-black/10 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50">
+    <div className="min-h-screen bg-gray-50">
+      {/* Navigation */}
+      <nav className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <div className="text-white font-bold text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">VOICE</div>
-              <div className="hidden md:block ml-10">
-                <div className="flex items-baseline space-x-4">
-                  <a href="#" className="relative group bg-white/10 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
-                    <LayoutDashboard size={18} />
-                    Dashboard
-                    <div className="absolute inset-x-0 h-0.5 bottom-0 bg-gradient-to-r from-white/0 via-white/70 to-white/0 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
-                  </a>
-                  {['Projects', 'Team', 'Settings'].map((item, index) => (
-                    <a
-                      key={item}
-                      href="#"
-                      className="relative group text-white/70 hover:text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all duration-200 hover:bg-white/5"
-                    >
-                      {index === 0 && <FolderGit2 size={18} />}
-                      {index === 1 && <Users size={18} />}
-                      {index === 2 && <Settings size={18} />}
-                      {item}
-                      <div className="absolute inset-x-0 h-0.5 bottom-0 bg-gradient-to-r from-white/0 via-white/70 to-white/0 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
-                    </a>
-                  ))}
-                </div>
+            <div className="flex items-center gap-8">
+              <Logo />
+              <div className="hidden md:flex items-center space-x-8">
+                <a href="#" className="text-gray-900 hover:text-gray-600 px-3 py-2 text-sm font-medium">
+                  หน้าแรก
+                </a>
+                <a href="#" className="text-gray-500 hover:text-gray-900 px-3 py-2 text-sm font-medium">
+                  ตั้งค่าโปรไฟล์
+                </a>
+                <a href="#" className="text-gray-500 hover:text-gray-900 px-3 py-2 text-sm font-medium">
+                  ผลงานของฉัน
+                </a>
+                <a href="#" className="text-gray-500 hover:text-gray-900 px-3 py-2 text-sm font-medium">
+                  ตั้งค่า
+                </a>
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <button className="relative p-2 text-white/70 hover:text-white transition-colors duration-200">
-                <Bell size={20} />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              <button className="bg-black text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors">
+                + โพสต์ผลงาน
               </button>
+              <button className="text-gray-500 hover:text-gray-700">
+                <Bell size={20} />
+              </button>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium text-gray-700">
+                  {user.displayName ? user.displayName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+                </div>
+                <span className="text-sm text-gray-700">{user.displayName || user.email}</span>
+              </div>
               <button 
-                onClick={() => window.location.href = '/login'}
-                className="flex items-center gap-2 bg-white/10 hover:bg-white/15 text-white px-4 py-2 rounded-lg transition-all duration-200 font-medium text-sm border border-white/10 hover:border-white/20"
+                onClick={handleLogout}
+                className="text-gray-500 hover:text-gray-700"
               >
-                <LogOut size={18} />
-                Logout
+                <LogOut size={20} />
               </button>
             </div>
           </div>
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-black/20 backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-white/10">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60 tracking-tight">Welcome back, Alex</h1>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-medium">A</div>
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Banner */}
+        <div className="relative rounded-2xl overflow-hidden mb-8">
+          <img 
+            src="https://images.unsplash.com/photo-1614583225154-5fcdda07019e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80"
+            alt="Banner"
+            className="w-full h-[300px] object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/50 to-purple-500/50 flex items-center px-12">
+            <div className="text-white">
+              <h1 className="text-4xl font-bold mb-4">New episode</h1>
+              <button className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-6 py-2 rounded-full text-sm font-medium backdrop-blur-sm transition-all">
+                <Play size={16} />
+                อ่านเลย
+              </button>
             </div>
           </div>
+          {/* Pagination dots */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+            <div className="w-2 h-2 rounded-full bg-white"></div>
+            <div className="w-2 h-2 rounded-full bg-white/50"></div>
+            <div className="w-2 h-2 rounded-full bg-white/50"></div>
+          </div>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { icon: Activity, title: 'Quick Stats', color: 'indigo', stat: '24', label: 'Active Projects' },
-              { icon: Star, title: 'Recent Activity', color: 'purple', stat: '12', label: 'Updates Today' },
-              { icon: Bell, title: 'Notifications', color: 'pink', stat: '5', label: 'Unread Messages' }
-            ].map((card, index) => (
-              <div key={index} className="group bg-white/5 hover:bg-white/10 rounded-xl p-6 border border-white/10 transition-all duration-300 cursor-pointer hover:shadow-lg hover:shadow-{card.color}-500/10">
-                <div className={`h-12 w-12 bg-${card.color}-500/20 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                  <card.icon className={`text-${card.color}-300`} size={24} />
+        {/* Categories */}
+        <div className="grid grid-cols-3 gap-4 mb-8">
+          <div className="relative rounded-xl overflow-hidden h-48">
+            <img 
+              src="https://images.unsplash.com/photo-1516486392848-8b67ef89f113?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80"
+              alt="นิยายเรื่อง"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+              <span className="text-white text-xl font-medium">นิยายเรื่อง</span>
+            </div>
+          </div>
+          <div className="relative rounded-xl overflow-hidden h-48">
+            <img 
+              src="https://images.unsplash.com/photo-1516486392848-8b67ef89f113?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80"
+              alt="พอดแคสต์"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+              <span className="text-white text-xl font-medium">พอดแคสต์</span>
+            </div>
+          </div>
+          <div className="relative rounded-xl overflow-hidden h-48">
+            <img 
+              src="https://images.unsplash.com/photo-1516486392848-8b67ef89f113?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80"
+              alt="เข้าใจ"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+              <span className="text-white text-xl font-medium">เข้าใจ</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Novel Grid */}
+        <div className="mb-8">
+          <h2 className="text-xl font-medium mb-4">แนะนำ</h2>
+          <div className="grid grid-cols-6 gap-4">
+            {[1, 2, 3, 4, 5, 6].map((item) => (
+              <div key={item} className="group cursor-pointer">
+                <div className="aspect-[3/4] rounded-lg overflow-hidden mb-2">
+                  <img
+                    src="https://images.unsplash.com/photo-1516486392848-8b67ef89f113?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80"
+                    alt="Novel cover"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                  />
                 </div>
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-xl font-semibold text-white group-hover:text-white transition-colors duration-300">{card.title}</h2>
-                  <span className="text-2xl font-bold text-white/90">{card.stat}</span>
+                <h3 className="text-sm font-medium text-gray-900 line-clamp-2">เมื่อคุณครูที่รักมาเป็นนักเรียน</h3>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs text-gray-500">32</span>
+                  <span className="text-xs text-gray-500">57%</span>
                 </div>
-                <p className="text-white/70">{card.label}</p>
               </div>
             ))}
           </div>
+        </div>
 
-          <div className="mt-12 space-y-8">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-semibold text-white">Recent Projects</h2>
-              <button className="text-white/70 hover:text-white flex items-center gap-1 text-sm transition-colors duration-200">
-                View All
-                <ChevronRight size={16} />
-              </button>
+        {/* Popular Section */}
+        <div>
+          <div className="flex items-center gap-4 mb-4">
+            <h2 className="text-xl font-medium">ยอดนิยม</h2>
+            <div className="flex gap-2">
+              <button className="px-4 py-1 rounded-full bg-black text-white text-sm">ทั้งหมด</button>
+              <button className="px-4 py-1 rounded-full bg-gray-100 text-gray-600 text-sm hover:bg-gray-200">นิยาย</button>
+              <button className="px-4 py-1 rounded-full bg-gray-100 text-gray-600 text-sm hover:bg-gray-200">การ์ตูน</button>
+              <button className="px-4 py-1 rounded-full bg-gray-100 text-gray-600 text-sm hover:bg-gray-200">พอดแคสต์</button>
+              <button className="px-4 py-1 rounded-full bg-gray-100 text-gray-600 text-sm hover:bg-gray-200">ซีรีส์</button>
+              <button className="px-4 py-1 rounded-full bg-gray-100 text-gray-600 text-sm hover:bg-gray-200">อื่นๆ</button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                { name: 'Website Redesign', progress: 75, members: 4 },
-                { name: 'Mobile App', progress: 45, members: 3 },
-                { name: 'API Integration', progress: 90, members: 5 }
-              ].map((project, index) => (
-                <div key={index} className="group bg-white/5 hover:bg-white/10 rounded-xl p-6 transition-all duration-200 cursor-pointer border border-white/10 hover:border-white/20">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
-                      <FolderGit2 className="text-white" size={20} />
-                    </div>
-                    <div>
-                      <h3 className="text-white font-medium">{project.name}</h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className="w-24 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
-                            style={{ width: `${project.progress}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-white/50 text-sm">{project.progress}%</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex -space-x-2">
-                      {Array(project.members).fill(0).map((_, i) => (
-                        <div
-                          key={i}
-                          className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 border-2 border-black/20 flex items-center justify-center text-white text-xs font-medium"
-                        >
-                          {String.fromCharCode(65 + i)}
-                        </div>
-                      ))}
-                    </div>
-                    <button className="text-white/50 hover:text-white transition-colors duration-200">
-                      <ChevronRight size={20} />
-                    </button>
-                  </div>
+          </div>
+          <div className="grid grid-cols-5 gap-6">
+            {[1, 2, 3, 4, 5].map((item) => (
+              <div key={item} className="group cursor-pointer">
+                <div className="aspect-[3/4] rounded-lg overflow-hidden mb-4">
+                  <img
+                    src="https://images.unsplash.com/photo-1516486392848-8b67ef89f113?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80"
+                    alt="Novel cover"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                  />
                 </div>
-              ))}
-            </div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-2xl font-bold">{item}</span>
+                  <h3 className="text-sm font-medium text-gray-900">เมื่อคุณครูที่รักมาเป็นนักเรียน</h3>
+                </div>
+                <button className="w-full py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition-colors">
+                  อ่านเลย
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       </main>
