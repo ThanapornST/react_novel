@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bot, Home, FileText, PenSquare, Settings, Menu, X, LogOut, Plus } from 'lucide-react';
+import { Bot, Home, FileText, PenSquare, Settings, Menu, X, LogOut } from 'lucide-react';
 import { auth } from '../lib/firebase';
 import { User } from 'firebase/auth';
 
@@ -50,21 +50,33 @@ export function HomePage() {
         transform transition-transform duration-200 ease-in-out z-30
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        <div className="p-4">
-          <div className="flex items-center gap-2 mb-8">
-            <Bot className="w-8 h-8 text-indigo-500" />
-            <span className="font-semibold text-xl">VOICE</span>
+        <div className="flex flex-col h-full">
+          {/* Logo */}
+          <div className="p-4 border-b border-gray-200">
+            <div className="flex items-center gap-2">
+              <Bot className="w-8 h-8 text-indigo-500" />
+              <span className="font-semibold text-xl">VOICE</span>
+            </div>
           </div>
-          
-          {user ? (
-            <div className="mb-8">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+
+          {/* User Profile Section */}
+          <div className="p-4">
+            {!user && (
+              <button 
+                onClick={handleLoginClick}
+                className="w-full bg-black text-white rounded-full py-2 text-sm font-medium hover:bg-black/90 transition-colors"
+              >
+                เข้าสู่ระบบ/สร้างบัญชี
+              </button>
+            )}
+            {user && (
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
                   {user.photoURL ? (
                     <img 
                       src={user.photoURL} 
                       alt="Profile" 
-                      className="w-full h-full rounded-full object-cover"
+                      className="w-full h-full object-cover"
                     />
                   ) : (
                     <span className="text-lg font-medium text-gray-600">
@@ -72,32 +84,28 @@ export function HomePage() {
                     </span>
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-medium text-gray-900 truncate">
+                <div className="flex-1">
+                  <h3 className="font-medium text-gray-900">
                     {user.displayName || user.email?.split('@')[0]}
                   </h3>
-                  {user.email && (
-                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                  )}
+                  <p className="text-sm text-gray-500">My Profile</p>
                 </div>
               </div>
-              <button
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-black text-white rounded-full text-sm font-medium hover:bg-black/90 transition-colors"
-              >
-                <Plus size={16} />
-                โปรเจกต์ใหม่
+            )}
+          </div>
+
+          {/* Upload Button - Only show when logged in */}
+          {user && (
+            <div className="px-4 mb-4">
+              <button className="w-full bg-black text-white rounded-full py-2 text-sm font-medium hover:bg-black/90 transition-colors flex items-center justify-center gap-2">
+                <FileText size={16} />
+                โปรเจคใหม่
               </button>
             </div>
-          ) : (
-            <button 
-              onClick={handleLoginClick}
-              className="w-full bg-gray-900 text-white rounded-full py-2 px-4 text-sm font-medium mb-8 hover:bg-gray-800 transition-colors"
-            >
-              เข้าสู่ระบบ/สร้างบัญชี
-            </button>
           )}
 
-          <div className="space-y-2">
+          {/* Navigation Links */}
+          <nav className="flex-1 px-2">
             <a href="#" className="flex items-center gap-3 text-gray-900 hover:bg-gray-50 px-4 py-2 rounded-lg transition-colors">
               <Home size={20} />
               <span className="text-sm">หน้าหลัก</span>
@@ -114,7 +122,20 @@ export function HomePage() {
               <Settings size={20} />
               <span className="text-sm">ตั้งค่า</span>
             </a>
-          </div>
+          </nav>
+
+          {/* Logout Button */}
+          {user && (
+            <div className="p-4 border-t border-gray-200">
+              <button 
+                onClick={handleLogout}
+                className="flex items-center gap-2 text-gray-500 hover:text-gray-700 text-sm"
+              >
+                <LogOut size={16} />
+                ออกจากระบบ
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -128,22 +149,6 @@ export function HomePage() {
           >
             {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
-          {user ? (
-            <button 
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-1.5 border border-gray-200 rounded-full text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
-            >
-              <LogOut size={16} />
-              ออกจากระบบ
-            </button>
-          ) : (
-            <button 
-              onClick={handleLoginClick}
-              className="bg-gray-900 text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors"
-            >
-              เข้าสู่ระบบ
-            </button>
-          )}
         </header>
 
         {/* Main Content Area */}
