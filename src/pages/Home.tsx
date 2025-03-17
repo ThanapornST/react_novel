@@ -514,18 +514,18 @@ export function HomePage() {
           </div>
 
           {/* Category Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            <div className="relative h-24 rounded-xl overflow-hidden bg-gradient-to-r from-orange-400 to-orange-500">
+          <div className="grid grid-cols-3 gap-4 mb-8">
+            <div className="relative h-24 rounded-xl overflow-hidden bg-gradient-to-r from-orange-400 to-orange-500 hover:shadow-lg transition-shadow duration-200">
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="text-white text-lg font-medium">นิยายเสียง</span>
               </div>
             </div>
-            <div className="relative h-24 rounded-xl overflow-hidden bg-gradient-to-r from-blue-400 to-blue-500">
+            <div className="relative h-24 rounded-xl overflow-hidden bg-gradient-to-r from-blue-400 to-blue-500 hover:shadow-lg transition-shadow duration-200">
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="text-white text-lg font-medium">พอดแคสต์</span>
               </div>
             </div>
-            <div className="relative h-24 rounded-xl overflow-hidden bg-gradient-to-r from-purple-400 to-purple-500">
+            <div className="relative h-24 rounded-xl overflow-hidden bg-gradient-to-r from-purple-400 to-purple-500 hover:shadow-lg transition-shadow duration-200">
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="text-white text-lg font-medium">นิยาย</span>
               </div>
