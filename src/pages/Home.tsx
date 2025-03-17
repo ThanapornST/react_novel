@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bot, Home, FileText, PenSquare, Settings, Menu, X, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Bot, Home, FileText, PenSquare, Settings, Menu, X, LogOut, ChevronLeft, ChevronRight, Volume2, Play } from 'lucide-react';
 import { auth } from '../lib/firebase';
 import { User } from 'firebase/auth';
 
@@ -12,6 +12,7 @@ export function HomePage() {
   const [currentNovelSlide, setCurrentNovelSlide] = useState(0);
   const [currentPopularSlide, setCurrentPopularSlide] = useState(0);
   const [currentNewSectionSlide, setCurrentNewSectionSlide] = useState(0);
+  const [playingAudio, setPlayingAudio] = useState<number | null>(null);
 
   // Banner carousel data
   const carouselItems = [
@@ -67,6 +68,12 @@ export function HomePage() {
   const totalNovelSlides = Math.ceil(novels.length / itemsPerSlide);
   const totalPopularSlides = Math.ceil(popularNovels.length / itemsPerSlide);
   const totalNewSectionSlides = Math.ceil(newSectionNovels.length / itemsPerSlide);
+
+  // Function to handle audio playback
+  const toggleAudio = (novelId: number, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent card click event
+    setPlayingAudio(playingAudio === novelId ? null : novelId);
+  };
 
   // Auto slide effects
   useEffect(() => {
@@ -160,6 +167,66 @@ export function HomePage() {
   const prevNewSectionSlide = () => {
     setCurrentNewSectionSlide((prev) => (prev - 1 + totalNewSectionSlides) % totalNewSectionSlides);
   };
+
+  // Basic Novel Card Component (without audio)
+  const BasicNovelCard = ({ novel }: { novel: any }) => (
+    <div className="group cursor-pointer">
+      <div className="relative aspect-[3/4] rounded-lg overflow-hidden mb-2 bg-gray-100">
+        <img
+          src={novel.cover}
+          alt={novel.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+        />
+      </div>
+      <h3 className="text-sm font-medium text-gray-900 line-clamp-2">
+        {novel.title}
+      </h3>
+      <p className="text-xs text-gray-500 mt-1">
+        โดย {novel.author}
+      </p>
+      <div className="flex items-center gap-2 mt-1">
+        <span className="text-xs text-gray-500">{novel.reads}</span>
+        <span className="text-xs text-gray-500">{novel.rating}%</span>
+      </div>
+    </div>
+  );
+
+  // Novel Card with Audio Component
+  const NovelCardWithAudio = ({ novel, isPlaying }: { novel: any, isPlaying: boolean }) => (
+    <div className="group cursor-pointer">
+      <div className="relative aspect-[3/4] rounded-lg overflow-hidden mb-2 bg-gray-100">
+        <img
+          src={novel.cover}
+          alt={novel.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+        />
+        <button
+          onClick={(e) => toggleAudio(novel.id, e)}
+          className="absolute bottom-2 right-2 bg-black/80 hover:bg-black text-white px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all duration-200"
+        >
+          <Play size={14} className={isPlaying ? 'animate-pulse' : ''} />
+          ฟังเสียง
+        </button>
+        {isPlaying && (
+          <div className="absolute bottom-2 left-2 flex items-center gap-0.5">
+            <div className="w-1 h-3 bg-white animate-[soundbar_0.5s_ease-in-out_infinite] delay-0"></div>
+            <div className="w-1 h-4 bg-white animate-[soundbar_0.5s_ease-in-out_infinite] delay-150"></div>
+            <div className="w-1 h-2 bg-white animate-[soundbar_0.5s_ease-in-out_infinite] delay-300"></div>
+          </div>
+        )}
+      </div>
+      <h3 className="text-sm font-medium text-gray-900 line-clamp-2">
+        {novel.title}
+      </h3>
+      <p className="text-xs text-gray-500 mt-1">
+        โดย {novel.author}
+      </p>
+      <div className="flex items-center gap-2 mt-1">
+        <span className="text-xs text-gray-500">{novel.reads}</span>
+        <span className="text-xs text-gray-500">{novel.rating}%</span>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-white flex">
@@ -342,7 +409,7 @@ export function HomePage() {
             </div>
           </div>
 
-          {/* Recommended Section with Carousel */}
+          {/* Recommended Section with Carousel (without audio) */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-medium">แนะนำ</h2>
@@ -381,25 +448,7 @@ export function HomePage() {
                         (slideIndex + 1) * itemsPerSlide
                       )
                       .map((novel) => (
-                        <div key={novel.id} className="group cursor-pointer">
-                          <div className="aspect-[3/4] rounded-lg overflow-hidden mb-2 bg-gray-100">
-                            <img
-                              src={novel.cover}
-                              alt={novel.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                            />
-                          </div>
-                          <h3 className="text-sm font-medium text-gray-900 line-clamp-2">
-                            {novel.title}
-                          </h3>
-                          <p className="text-xs text-gray-500 mt-1">
-                            โดย {novel.author}
-                          </p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs text-gray-500">{novel.reads}</span>
-                            <span className="text-xs text-gray-500">{novel.rating}%</span>
-                          </div>
-                        </div>
+                        <BasicNovelCard key={novel.id} novel={novel} />
                       ))}
                   </div>
                 ))}
@@ -436,7 +485,7 @@ export function HomePage() {
             </div>
           </div>
 
-          {/* Popular Section with Carousel */}
+          {/* Popular Section with Audio */}
           <div className="relative overflow-hidden">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-medium">เรื่องยอดนิยม</h2>
@@ -474,25 +523,11 @@ export function HomePage() {
                       (slideIndex + 1) * itemsPerSlide
                     )
                     .map((novel) => (
-                      <div key={novel.id} className="group cursor-pointer">
-                        <div className="aspect-[3/4] rounded-lg overflow-hidden mb-2 bg-gray-100">
-                          <img
-                            src={novel.cover}
-                            alt={novel.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                          />
-                        </div>
-                        <h3 className="text-sm font-medium text-gray-900 line-clamp-2">
-                          {novel.title}
-                        </h3>
-                        <p className="text-xs text-gray-500 mt-1">
-                          โดย {novel.author}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs text-gray-500">{novel.reads}</span>
-                          <span className="text-xs text-gray-500">{novel.rating}%</span>
-                        </div>
-                      </div>
+                      <NovelCardWithAudio 
+                        key={novel.id} 
+                        novel={novel} 
+                        isPlaying={playingAudio === novel.id}
+                      />
                     ))}
                 </div>
               ))}
@@ -514,7 +549,7 @@ export function HomePage() {
             </div>
           </div>
 
-          {/* New Section with Carousel */}
+          {/* New Section (without audio) */}
           <div className="relative overflow-hidden mt-12">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-medium">โปรโมท</h2>
@@ -552,25 +587,7 @@ export function HomePage() {
                       (slideIndex + 1) * itemsPerSlide
                     )
                     .map((novel) => (
-                      <div key={novel.id} className="group cursor-pointer">
-                        <div className="aspect-[3/4] rounded-lg overflow-hidden mb-2 bg-gray-100">
-                          <img
-                            src={novel.cover}
-                            alt={novel.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                          />
-                        </div>
-                        <h3 className="text-sm font-medium text-gray-900 line-clamp-2">
-                          {novel.title}
-                        </h3>
-                        <p className="text-xs text-gray-500 mt-1">
-                          โดย {novel.author}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs text-gray-500">{novel.reads}</span>
-                          <span className="text-xs text-gray-500">{novel.rating}%</span>
-                        </div>
-                      </div>
+                      <BasicNovelCard key={novel.id} novel={novel} />
                     ))}
                 </div>
               ))}
