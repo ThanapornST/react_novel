@@ -13,6 +13,19 @@ export function HomePage() {
   const [currentPopularSlide, setCurrentPopularSlide] = useState(0);
   const [currentNewSectionSlide, setCurrentNewSectionSlide] = useState(0);
   const [playingAudio, setPlayingAudio] = useState<number | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+
+  // Categories
+  const categories = [
+    { id: 'All', name: 'All' },
+    { id: 'romance', name: 'โรแมนซ์' },
+    { id: 'drama', name: 'ดราม่า' },
+    { id: 'fantasy', name: 'แฟนตาซี' },
+    { id: 'comedy', name: 'คอมเมดี้' },
+    { id: 'action', name: 'แอคชั่น' },
+    { id: 'horror', name: 'สยองขวัญ' },
+    { id: 'mystery', name: 'ลึกลับ' }
+  ];
 
   // Banner carousel data
   const carouselItems = [
@@ -43,13 +56,12 @@ export function HomePage() {
     cover: "https://images.unsplash.com/photo-1516486392848-8b67ef89f113?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
   }));
 
-  // Popular novels data with different content
+  // Popular novels data
   const popularNovels = Array.from({ length: 12 }).map((_, i) => ({
     id: i + 100,
-    title: "ราชันย์แห่งความมืด",
+    title: "แด่คุณคนที่หลับหายไปคืออะไร",
     author: "นักเขียนนิรนาม",
-    reads: 45,
-    rating: 89,
+    episode: i + 1,
     cover: "https://images.unsplash.com/photo-1532012197267-da84d127e765?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
   }));
 
@@ -63,15 +75,36 @@ export function HomePage() {
     cover: "https://images.unsplash.com/photo-1543852786-1cf6624b9987?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
   }));
 
-  // Number of items to show per slide
-  const itemsPerSlide = 6;
+  // Calculate items per slide based on screen size
+  const getItemsPerSlide = () => {
+    if (typeof window !== 'undefined') {
+      if (window.innerWidth < 640) return 2; // Mobile: 2 items
+      if (window.innerWidth < 768) return 3; // Tablet: 3 items
+      if (window.innerWidth < 1024) return 4; // Small desktop: 4 items
+      return 6; // Large desktop: 6 items
+    }
+    return 6;
+  };
+
+  const [itemsPerSlide, setItemsPerSlide] = useState(getItemsPerSlide());
+
+  // Update items per slide on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setItemsPerSlide(getItemsPerSlide());
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const totalNovelSlides = Math.ceil(novels.length / itemsPerSlide);
   const totalPopularSlides = Math.ceil(popularNovels.length / itemsPerSlide);
   const totalNewSectionSlides = Math.ceil(newSectionNovels.length / itemsPerSlide);
 
   // Function to handle audio playback
   const toggleAudio = (novelId: number, event: React.MouseEvent) => {
-    event.stopPropagation(); // Prevent card click event
+    event.stopPropagation();
     setPlayingAudio(playingAudio === novelId ? null : novelId);
   };
 
@@ -168,7 +201,7 @@ export function HomePage() {
     setCurrentNewSectionSlide((prev) => (prev - 1 + totalNewSectionSlides) % totalNewSectionSlides);
   };
 
-  // Basic Novel Card Component (without audio)
+  // Basic Novel Card Component
   const BasicNovelCard = ({ novel }: { novel: any }) => (
     <div className="group cursor-pointer">
       <div className="relative aspect-[3/4] rounded-lg overflow-hidden mb-2 bg-gray-100">
@@ -194,36 +227,126 @@ export function HomePage() {
   // Novel Card with Audio Component
   const NovelCardWithAudio = ({ novel, isPlaying }: { novel: any, isPlaying: boolean }) => (
     <div className="group cursor-pointer">
-      <div className="relative aspect-[3/4] rounded-lg overflow-hidden mb-2 bg-gray-100">
-        <img
-          src={novel.cover}
-          alt={novel.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-        />
+      <div className="relative">
+        <div className="absolute top-2 right-2 z-10">
+          <span className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium">
+            จบ
+          </span>
+        </div>
+        <div className="aspect-[3/4] rounded-lg overflow-hidden mb-2 bg-gray-100">
+          <img
+            src={novel.cover}
+            alt={novel.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+          />
+        </div>
+      </div>
+      <div className="space-y-1">
+        <div className="flex items-baseline gap-2">
+          <span className="text-2xl font-bold">{novel.episode}</span>
+          <h3 className="text-sm font-medium text-gray-900 line-clamp-2">
+            {novel.title}
+          </h3>
+        </div>
+        <p className="text-xs text-gray-500">
+          By {novel.author}
+        </p>
         <button
           onClick={(e) => toggleAudio(novel.id, e)}
-          className="absolute bottom-2 right-2 bg-black/80 hover:bg-black text-white px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all duration-200"
+          className="w-full bg-black text-white py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-black/90 transition-colors"
         >
-          <Play size={14} className={isPlaying ? 'animate-pulse' : ''} />
-          ฟังเสียง
+          {isPlaying ? (
+            <div className="flex items-center gap-0.5">
+              <div className="w-1 h-3 bg-white animate-[soundbar_0.5s_ease-in-out_infinite] delay-0"></div>
+              <div className="w-1 h-4 bg-white animate-[soundbar_0.5s_ease-in-out_infinite] delay-150"></div>
+              <div className="w-1 h-2 bg-white animate-[soundbar_0.5s_ease-in-out_infinite] delay-300"></div>
+            </div>
+          ) : (
+            <>
+              <Play size={16} />
+              <span className="text-sm font-medium">ฟังเลย</span>
+            </>
+          )}
         </button>
-        {isPlaying && (
-          <div className="absolute bottom-2 left-2 flex items-center gap-0.5">
-            <div className="w-1 h-3 bg-white animate-[soundbar_0.5s_ease-in-out_infinite] delay-0"></div>
-            <div className="w-1 h-4 bg-white animate-[soundbar_0.5s_ease-in-out_infinite] delay-150"></div>
-            <div className="w-1 h-2 bg-white animate-[soundbar_0.5s_ease-in-out_infinite] delay-300"></div>
-          </div>
-        )}
       </div>
-      <h3 className="text-sm font-medium text-gray-900 line-clamp-2">
-        {novel.title}
-      </h3>
-      <p className="text-xs text-gray-500 mt-1">
-        โดย {novel.author}
-      </p>
-      <div className="flex items-center gap-2 mt-1">
-        <span className="text-xs text-gray-500">{novel.reads}</span>
-        <span className="text-xs text-gray-500">{novel.rating}%</span>
+    </div>
+  );
+
+  // Carousel Section Component
+  const CarouselSection = ({ 
+    title, 
+    items, 
+    currentSlideIndex, 
+    totalSlides,
+    onPrev,
+    onNext,
+    onSlideChange,
+    renderItem,
+  }: {
+    title: string;
+    items: any[];
+    currentSlideIndex: number;
+    totalSlides: number;
+    onPrev: () => void;
+    onNext: () => void;
+    onSlideChange: (index: number) => void;
+    renderItem: (item: any) => React.ReactNode;
+  }) => (
+    <div className="mb-8">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-medium">{title}</h2>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onPrev}
+            className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+            aria-label={`Previous ${title}`}
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <button
+            onClick={onNext}
+            className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+            aria-label={`Next ${title}`}
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
+      </div>
+      <div className="relative overflow-hidden">
+        <div
+          className="flex transition-transform duration-500 ease-in-out"
+          style={{
+            transform: `translateX(-${currentSlideIndex * 100}%)`,
+          }}
+        >
+          {Array.from({ length: totalSlides }).map((_, slideIndex) => (
+            <div
+              key={slideIndex}
+              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 min-w-full"
+            >
+              {items
+                .slice(
+                  slideIndex * itemsPerSlide,
+                  (slideIndex + 1) * itemsPerSlide
+                )
+                .map(renderItem)}
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-center gap-2 mt-4">
+          {Array.from({ length: totalSlides }).map((_, index) => (
+            <button
+              key={index}
+              onClick={() => onSlideChange(index)}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                currentSlideIndex === index
+                  ? 'bg-gray-800 w-4'
+                  : 'bg-gray-300 hover:bg-gray-400'
+              }`}
+              aria-label={`Go to ${title} slide ${index + 1}`}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -409,205 +532,84 @@ export function HomePage() {
             </div>
           </div>
 
-          {/* Recommended Section with Carousel (without audio) */}
+          {/* Recommended Section */}
+          <CarouselSection
+            title="แนะนำ"
+            items={novels}
+            currentSlideIndex={currentNovelSlide}
+            totalSlides={totalNovelSlides}
+            onPrev={prevNovelSlide}
+            onNext={nextNovelSlide}
+            onSlideChange={goToNovelSlide}
+            renderItem={(novel) => <BasicNovelCard key={novel.id} novel={novel} />}
+          />
+
+          {/* Popular Section */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-medium">แนะนำ</h2>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={prevNovelSlide}
-                  className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                  aria-label="Previous novels"
-                >
-                  <ChevronLeft size={20} />
-                </button>
-                <button
-                  onClick={nextNovelSlide}
-                  className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                  aria-label="Next novels"
-                >
-                  <ChevronRight size={20} />
-                </button>
-              </div>
-            </div>
-            <div className="relative overflow-hidden">
-              <div
-                className="flex transition-transform duration-500 ease-in-out"
-                style={{
-                  transform: `translateX(-${currentNovelSlide * 100}%)`,
-                }}
-              >
-                {Array.from({ length: totalNovelSlides }).map((_, slideIndex) => (
-                  <div
-                    key={slideIndex}
-                    className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 min-w-full"
-                  >
-                    {novels
-                      .slice(
-                        slideIndex * itemsPerSlide,
-                        (slideIndex + 1) * itemsPerSlide
-                      )
-                      .map((novel) => (
-                        <BasicNovelCard key={novel.id} novel={novel} />
-                      ))}
-                  </div>
-                ))}
-              </div>
-              {/* Novel Carousel Navigation Dots */}
-              <div className="flex justify-center gap-2 mt-4">
-                {Array.from({ length: totalNovelSlides }).map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => goToNovelSlide(index)}
-                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                      currentNovelSlide === index
-                        ? 'bg-gray-800 w-4'
-                        : 'bg-gray-300 hover:bg-gray-400'
-                    }`}
-                    aria-label={`Go to novel slide ${index + 1}`}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Tags */}
-          <div className="mb-8">
-            <h2 className="text-xl font-medium mb-4">ยอดนิยม</h2>
-            <div className="flex flex-wrap gap-2">
-              <button className="px-4 py-1.5 rounded-full bg-gray-900 text-white text-sm">All</button>
-              <button className="px-4 py-1.5 rounded-full bg-gray-100 text-gray-600 text-sm hover:bg-gray-200">โรแมนติก</button>
-              <button className="px-4 py-1.5 rounded-full bg-gray-100 text-gray-600 text-sm hover:bg-gray-200">ตลก</button>
-              <button className="px-4 py-1.5 rounded-full bg-gray-100 text-gray-600 text-sm hover:bg-gray-200">แฟนตาซี</button>
-              <button className="px-4 py-1.5 rounded-full bg-gray-100 text-gray-600 text-sm hover:bg-gray-200">สยองขวัญ</button>
-              <button className="px-4 py-1.5 rounded-full bg-gray-100 text-gray-600 text-sm hover:bg-gray-200">ลึกลับ</button>
-              <button className="px-4 py-1.5 rounded-full bg-gray-100 text-gray-600 text-sm hover:bg-gray-200">กำลังภายใน</button>
-            </div>
-          </div>
-
-          {/* Popular Section with Audio */}
-          <div className="relative overflow-hidden">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-medium">เรื่องยอดนิยม</h2>
+              <h2 className="text-xl font-medium">ยอดนิยม</h2>
               <div className="flex items-center gap-2">
                 <button
                   onClick={prevPopularSlide}
                   className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                  aria-label="Previous popular novels"
                 >
                   <ChevronLeft size={20} />
                 </button>
                 <button
                   onClick={nextPopularSlide}
                   className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                  aria-label="Next popular novels"
                 >
                   <ChevronRight size={20} />
                 </button>
               </div>
             </div>
-            <div
-              className="flex transition-transform duration-500 ease-in-out"
-              style={{
-                transform: `translateX(-${currentPopularSlide * 100}%)`,
-              }}
-            >
-              {Array.from({ length: totalPopularSlides }).map((_, slideIndex) => (
-                <div
-                  key={slideIndex}
-                  className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 min-w-full"
-                >
-                  {popularNovels
-                    .slice(
-                      slideIndex * itemsPerSlide,
-                      (slideIndex + 1) * itemsPerSlide
-                    )
-                    .map((novel) => (
-                      <NovelCardWithAudio 
-                        key={novel.id} 
-                        novel={novel} 
-                        isPlaying={playingAudio === novel.id}
-                      />
-                    ))}
-                </div>
-              ))}
-            </div>
-            {/* Popular Carousel Navigation Dots */}
-            <div className="flex justify-center gap-2 mt-4">
-              {Array.from({ length: totalPopularSlides }).map((_, index) => (
+            
+            {/* Categories */}
+            <div className="flex gap-2 overflow-x-auto pb-4 mb-6 scrollbar-hide">
+              {categories.map(category => (
                 <button
-                  key={index}
-                  onClick={() => goToPopularSlide(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    currentPopularSlide === index
-                      ? 'bg-gray-800 w-4'
-                      : 'bg-gray-300 hover:bg-gray-400'
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${
+                    selectedCategory === category.id
+                      ? 'bg-black text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
-                  aria-label={`Go to popular slide ${index + 1}`}
-                />
+                >
+                  {category.name}
+                </button>
               ))}
             </div>
+
+            <CarouselSection
+              title="ยอดนิยม"
+              items={popularNovels}
+              currentSlideIndex={currentPopularSlide}
+              totalSlides={totalPopularSlides}
+              onPrev={prevPopularSlide}
+              onNext={nextPopularSlide}
+              onSlideChange={goToPopularSlide}
+              renderItem={(novel) => (
+                <NovelCardWithAudio
+                  key={novel.id}
+                  novel={novel}
+                  isPlaying={playingAudio === novel.id}
+                />
+              )}
+            />
           </div>
 
-          {/* New Section (without audio) */}
-          <div className="relative overflow-hidden mt-12">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-medium">โปรโมท</h2>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={prevNewSectionSlide}
-                  className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                  aria-label="Previous new section novels"
-                >
-                  <ChevronLeft size={20} />
-                </button>
-                <button
-                  onClick={nextNewSectionSlide}
-                  className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                  aria-label="Next new section novels"
-                >
-                  <ChevronRight size={20} />
-                </button>
-              </div>
-            </div>
-            <div
-              className="flex transition-transform duration-500 ease-in-out"
-              style={{
-                transform: `translateX(-${currentNewSectionSlide * 100}%)`,
-              }}
-            >
-              {Array.from({ length: totalNewSectionSlides }).map((_, slideIndex) => (
-                <div
-                  key={slideIndex}
-                  className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 min-w-full"
-                >
-                  {newSectionNovels
-                    .slice(
-                      slideIndex * itemsPerSlide,
-                      (slideIndex + 1) * itemsPerSlide
-                    )
-                    .map((novel) => (
-                      <BasicNovelCard key={novel.id} novel={novel} />
-                    ))}
-                </div>
-              ))}
-            </div>
-            {/* New Section Carousel Navigation Dots */}
-            <div className="flex justify-center gap-2 mt-4">
-              {Array.from({ length: totalNewSectionSlides }).map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => goToNewSectionSlide(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    currentNewSectionSlide === index
-                      ? 'bg-gray-800 w-4'
-                      : 'bg-gray-300 hover:bg-gray-400'
-                  }`}
-                  aria-label={`Go to new section slide ${index + 1}`}
-                />
-              ))}
-            </div>
-          </div>
+          {/* New Section */}
+          <CarouselSection
+            title="โปรโมท"
+            items={newSectionNovels}
+            currentSlideIndex={currentNewSectionSlide}
+            totalSlides={totalNewSectionSlides}
+            onPrev={prevNewSectionSlide}
+            onNext={nextNewSectionSlide}
+            onSlideChange={goToNewSectionSlide}
+            renderItem={(novel) => <BasicNovelCard key={novel.id} novel={novel} />}
+          />
         </main>
       </div>
     </div>
