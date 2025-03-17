@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bot, Home, FileText, PenSquare, Settings, Menu, X, LogOut } from 'lucide-react';
+import { Bot, Home, FileText, PenSquare, Settings, Menu, X, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
 import { auth } from '../lib/firebase';
 import { User } from 'firebase/auth';
 
@@ -8,12 +8,99 @@ export function HomePage() {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [currentNovelSlide, setCurrentNovelSlide] = useState(0);
+  const [currentPopularSlide, setCurrentPopularSlide] = useState(0);
+  const [currentNewSectionSlide, setCurrentNewSectionSlide] = useState(0);
+
+  // Banner carousel data
+  const carouselItems = [
+    {
+      image: "https://images.unsplash.com/photo-1614583225154-5fcdda07019e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+      title: "อัปเดตตอนใหม่",
+      buttonText: "สร้างผลงาน"
+    },
+    {
+      image: "https://images.unsplash.com/photo-1516486392848-8b67ef89f113?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      title: "เรื่องราวใหม่",
+      buttonText: "อ่านเลย"
+    },
+    {
+      image: "https://images.unsplash.com/photo-1532012197267-da84d127e765?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      title: "แนะนำสำหรับคุณ",
+      buttonText: "ดูเพิ่มเติม"
+    }
+  ];
+
+  // Novel data
+  const novels = Array.from({ length: 12 }).map((_, i) => ({
+    id: i,
+    title: "แม่มดสาวกับนายจอมมาร",
+    author: "นักเขียนนิรนาม",
+    reads: 33,
+    rating: 67,
+    cover: "https://images.unsplash.com/photo-1516486392848-8b67ef89f113?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+  }));
+
+  // Popular novels data with different content
+  const popularNovels = Array.from({ length: 12 }).map((_, i) => ({
+    id: i + 100,
+    title: "ราชันย์แห่งความมืด",
+    author: "นักเขียนนิรนาม",
+    reads: 45,
+    rating: 89,
+    cover: "https://images.unsplash.com/photo-1532012197267-da84d127e765?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+  }));
+
+  // Add new data array for the new section
+  const newSectionNovels = Array.from({ length: 12 }).map((_, i) => ({
+    id: i + 200,
+    title: "เมื่อคุณหนูกลายเป็นแมว",
+    author: "นักเขียนนิรนาม",
+    reads: 28,
+    rating: 92,
+    cover: "https://images.unsplash.com/photo-1543852786-1cf6624b9987?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+  }));
+
+  // Number of items to show per slide
+  const itemsPerSlide = 6;
+  const totalNovelSlides = Math.ceil(novels.length / itemsPerSlide);
+  const totalPopularSlides = Math.ceil(popularNovels.length / itemsPerSlide);
+  const totalNewSectionSlides = Math.ceil(newSectionNovels.length / itemsPerSlide);
+
+  // Auto slide effects
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentNovelSlide((prev) => (prev + 1) % totalNovelSlides);
+    }, 7000);
+    return () => clearInterval(timer);
+  }, [totalNovelSlides]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentPopularSlide((prev) => (prev + 1) % totalPopularSlides);
+    }, 8000);
+    return () => clearInterval(timer);
+  }, [totalPopularSlides]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentNewSectionSlide((prev) => (prev + 1) % totalNewSectionSlides);
+    }, 9000);
+    return () => clearInterval(timer);
+  }, [totalNewSectionSlides]);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user);
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -32,6 +119,46 @@ export function HomePage() {
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index);
+  };
+
+  const goToNovelSlide = (index: number) => {
+    setCurrentNovelSlide(index);
+  };
+
+  const goToPopularSlide = (index: number) => {
+    setCurrentPopularSlide(index);
+  };
+
+  const goToNewSectionSlide = (index: number) => {
+    setCurrentNewSectionSlide(index);
+  };
+
+  const nextNovelSlide = () => {
+    setCurrentNovelSlide((prev) => (prev + 1) % totalNovelSlides);
+  };
+
+  const prevNovelSlide = () => {
+    setCurrentNovelSlide((prev) => (prev - 1 + totalNovelSlides) % totalNovelSlides);
+  };
+
+  const nextPopularSlide = () => {
+    setCurrentPopularSlide((prev) => (prev + 1) % totalPopularSlides);
+  };
+
+  const prevPopularSlide = () => {
+    setCurrentPopularSlide((prev) => (prev - 1 + totalPopularSlides) % totalPopularSlides);
+  };
+
+  const nextNewSectionSlide = () => {
+    setCurrentNewSectionSlide((prev) => (prev + 1) % totalNewSectionSlides);
+  };
+
+  const prevNewSectionSlide = () => {
+    setCurrentNewSectionSlide((prev) => (prev - 1 + totalNewSectionSlides) % totalNewSectionSlides);
   };
 
   return (
@@ -155,24 +282,44 @@ export function HomePage() {
         <main className="p-4 lg:p-8">
           {/* Banner Carousel */}
           <div className="relative rounded-xl overflow-hidden mb-8">
-            <img 
-              src="https://images.unsplash.com/photo-1614583225154-5fcdda07019e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
-              alt="Banner"
-              className="w-full h-[200px] lg:h-[280px] object-cover"
-            />
-            <div className="absolute inset-0 bg-black/30 flex items-center px-6 lg:px-12">
-              <div className="text-white">
-                <h1 className="text-2xl lg:text-3xl font-bold mb-4">อัปเดตตอนใหม่</h1>
-                <button className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-6 py-2 rounded-full text-sm font-medium backdrop-blur-sm transition-all">
-                  สร้างผลงาน
-                </button>
-              </div>
+            <div className="relative w-full h-[200px] lg:h-[280px]">
+              {carouselItems.map((item, index) => (
+                <div
+                  key={index}
+                  className={`absolute inset-0 transition-opacity duration-500 ${
+                    currentSlide === index ? 'opacity-100' : 'opacity-0'
+                  }`}
+                >
+                  <img 
+                    src={item.image}
+                    alt={`Banner ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/30 flex items-center px-6 lg:px-12">
+                    <div className="text-white">
+                      <h1 className="text-2xl lg:text-3xl font-bold mb-4">{item.title}</h1>
+                      <button className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-6 py-2 rounded-full text-sm font-medium backdrop-blur-sm transition-all">
+                        {item.buttonText}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
             {/* Carousel Navigation */}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-              <div className="w-2 h-2 rounded-full bg-white"></div>
-              <div className="w-2 h-2 rounded-full bg-white/50"></div>
-              <div className="w-2 h-2 rounded-full bg-white/50"></div>
+              {carouselItems.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToSlide(index)}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    currentSlide === index 
+                      ? 'bg-white w-4' 
+                      : 'bg-white/50 hover:bg-white/75'
+                  }`}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
             </div>
           </div>
 
@@ -195,30 +342,83 @@ export function HomePage() {
             </div>
           </div>
 
-          {/* Recommended Section */}
+          {/* Recommended Section with Carousel */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-medium">แนะนำ</h2>
-              <a href="#" className="text-sm text-gray-500 hover:text-gray-700">ดูทั้งหมด ›</a>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={prevNovelSlide}
+                  className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                  aria-label="Previous novels"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  onClick={nextNovelSlide}
+                  className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                  aria-label="Next novels"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="group cursor-pointer">
-                  <div className="aspect-[3/4] rounded-lg overflow-hidden mb-2 bg-gray-100">
-                    <img
-                      src="https://images.unsplash.com/photo-1516486392848-8b67ef89f113?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                      alt="Novel cover"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                    />
+            <div className="relative overflow-hidden">
+              <div
+                className="flex transition-transform duration-500 ease-in-out"
+                style={{
+                  transform: `translateX(-${currentNovelSlide * 100}%)`,
+                }}
+              >
+                {Array.from({ length: totalNovelSlides }).map((_, slideIndex) => (
+                  <div
+                    key={slideIndex}
+                    className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 min-w-full"
+                  >
+                    {novels
+                      .slice(
+                        slideIndex * itemsPerSlide,
+                        (slideIndex + 1) * itemsPerSlide
+                      )
+                      .map((novel) => (
+                        <div key={novel.id} className="group cursor-pointer">
+                          <div className="aspect-[3/4] rounded-lg overflow-hidden mb-2 bg-gray-100">
+                            <img
+                              src={novel.cover}
+                              alt={novel.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                            />
+                          </div>
+                          <h3 className="text-sm font-medium text-gray-900 line-clamp-2">
+                            {novel.title}
+                          </h3>
+                          <p className="text-xs text-gray-500 mt-1">
+                            โดย {novel.author}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs text-gray-500">{novel.reads}</span>
+                            <span className="text-xs text-gray-500">{novel.rating}%</span>
+                          </div>
+                        </div>
+                      ))}
                   </div>
-                  <h3 className="text-sm font-medium text-gray-900 line-clamp-2">แม่มดสาวกับนายจอมมาร</h3>
-                  <p className="text-xs text-gray-500 mt-1">โดย นักเขียนนิรนาม</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs text-gray-500">33</span>
-                    <span className="text-xs text-gray-500">67%</span>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
+              {/* Novel Carousel Navigation Dots */}
+              <div className="flex justify-center gap-2 mt-4">
+                {Array.from({ length: totalNovelSlides }).map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => goToNovelSlide(index)}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      currentNovelSlide === index
+                        ? 'bg-gray-800 w-4'
+                        : 'bg-gray-300 hover:bg-gray-400'
+                    }`}
+                    aria-label={`Go to novel slide ${index + 1}`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
 
@@ -236,25 +436,160 @@ export function HomePage() {
             </div>
           </div>
 
-          {/* Popular Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="group cursor-pointer">
-                <div className="aspect-[3/4] rounded-lg overflow-hidden mb-2 bg-gray-100">
-                  <img
-                    src="https://images.unsplash.com/photo-1516486392848-8b67ef89f113?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                    alt="Novel cover"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                  />
-                </div>
-                <h3 className="text-sm font-medium text-gray-900 line-clamp-2">แม่มดสาวกับนายจอมมาร</h3>
-                <p className="text-xs text-gray-500 mt-1">โดย นักเขียนนิรนาม</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-gray-500">33</span>
-                  <span className="text-xs text-gray-500">67%</span>
-                </div>
+          {/* Popular Section with Carousel */}
+          <div className="relative overflow-hidden">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-medium">เรื่องยอดนิยม</h2>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={prevPopularSlide}
+                  className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                  aria-label="Previous popular novels"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  onClick={nextPopularSlide}
+                  className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                  aria-label="Next popular novels"
+                >
+                  <ChevronRight size={20} />
+                </button>
               </div>
-            ))}
+            </div>
+            <div
+              className="flex transition-transform duration-500 ease-in-out"
+              style={{
+                transform: `translateX(-${currentPopularSlide * 100}%)`,
+              }}
+            >
+              {Array.from({ length: totalPopularSlides }).map((_, slideIndex) => (
+                <div
+                  key={slideIndex}
+                  className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 min-w-full"
+                >
+                  {popularNovels
+                    .slice(
+                      slideIndex * itemsPerSlide,
+                      (slideIndex + 1) * itemsPerSlide
+                    )
+                    .map((novel) => (
+                      <div key={novel.id} className="group cursor-pointer">
+                        <div className="aspect-[3/4] rounded-lg overflow-hidden mb-2 bg-gray-100">
+                          <img
+                            src={novel.cover}
+                            alt={novel.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                          />
+                        </div>
+                        <h3 className="text-sm font-medium text-gray-900 line-clamp-2">
+                          {novel.title}
+                        </h3>
+                        <p className="text-xs text-gray-500 mt-1">
+                          โดย {novel.author}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-gray-500">{novel.reads}</span>
+                          <span className="text-xs text-gray-500">{novel.rating}%</span>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              ))}
+            </div>
+            {/* Popular Carousel Navigation Dots */}
+            <div className="flex justify-center gap-2 mt-4">
+              {Array.from({ length: totalPopularSlides }).map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToPopularSlide(index)}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    currentPopularSlide === index
+                      ? 'bg-gray-800 w-4'
+                      : 'bg-gray-300 hover:bg-gray-400'
+                  }`}
+                  aria-label={`Go to popular slide ${index + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* New Section with Carousel */}
+          <div className="relative overflow-hidden mt-12">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-medium">โปรโมท</h2>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={prevNewSectionSlide}
+                  className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                  aria-label="Previous new section novels"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  onClick={nextNewSectionSlide}
+                  className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                  aria-label="Next new section novels"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            </div>
+            <div
+              className="flex transition-transform duration-500 ease-in-out"
+              style={{
+                transform: `translateX(-${currentNewSectionSlide * 100}%)`,
+              }}
+            >
+              {Array.from({ length: totalNewSectionSlides }).map((_, slideIndex) => (
+                <div
+                  key={slideIndex}
+                  className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 min-w-full"
+                >
+                  {newSectionNovels
+                    .slice(
+                      slideIndex * itemsPerSlide,
+                      (slideIndex + 1) * itemsPerSlide
+                    )
+                    .map((novel) => (
+                      <div key={novel.id} className="group cursor-pointer">
+                        <div className="aspect-[3/4] rounded-lg overflow-hidden mb-2 bg-gray-100">
+                          <img
+                            src={novel.cover}
+                            alt={novel.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                          />
+                        </div>
+                        <h3 className="text-sm font-medium text-gray-900 line-clamp-2">
+                          {novel.title}
+                        </h3>
+                        <p className="text-xs text-gray-500 mt-1">
+                          โดย {novel.author}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-gray-500">{novel.reads}</span>
+                          <span className="text-xs text-gray-500">{novel.rating}%</span>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              ))}
+            </div>
+            {/* New Section Carousel Navigation Dots */}
+            <div className="flex justify-center gap-2 mt-4">
+              {Array.from({ length: totalNewSectionSlides }).map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToNewSectionSlide(index)}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    currentNewSectionSlide === index
+                      ? 'bg-gray-800 w-4'
+                      : 'bg-gray-300 hover:bg-gray-400'
+                  }`}
+                  aria-label={`Go to new section slide ${index + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </main>
       </div>
