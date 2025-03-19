@@ -466,6 +466,16 @@ export function HomePage() {
           >
             {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
+
+          {/* Login Button in Header */}
+          {!user && (
+            <button
+              onClick={handleLoginClick}
+              className="ml-auto bg-black text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-black/90 transition-colors"
+            >
+              เข้าสู่ระบบ
+            </button>
+          )}
         </header>
 
         {/* Main Content Area */}
@@ -581,22 +591,48 @@ export function HomePage() {
               ))}
             </div>
 
-            <CarouselSection
-              title="ยอดนิยม"
-              items={popularNovels}
-              currentSlideIndex={currentPopularSlide}
-              totalSlides={totalPopularSlides}
-              onPrev={prevPopularSlide}
-              onNext={nextPopularSlide}
-              onSlideChange={goToPopularSlide}
-              renderItem={(novel) => (
-                <NovelCardWithAudio
-                  key={novel.id}
-                  novel={novel}
-                  isPlaying={playingAudio === novel.id}
-                />
-              )}
-            />
+            <div className="relative overflow-hidden">
+              <div
+                className="flex transition-transform duration-500 ease-in-out"
+                style={{
+                  transform: `translateX(-${currentPopularSlide * 100}%)`,
+                }}
+              >
+                {Array.from({ length: totalPopularSlides }).map((_, slideIndex) => (
+                  <div
+                    key={slideIndex}
+                    className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 min-w-full"
+                  >
+                    {popularNovels
+                      .slice(
+                        slideIndex * itemsPerSlide,
+                        (slideIndex + 1) * itemsPerSlide
+                      )
+                      .map((novel) => (
+                        <NovelCardWithAudio
+                          key={novel.id}
+                          novel={novel}
+                          isPlaying={playingAudio === novel.id}
+                        />
+                      ))}
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-center gap-2 mt-4">
+                {Array.from({ length: totalPopularSlides }).map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => goToPopularSlide(index)}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      currentPopularSlide === index
+                        ? 'bg-gray-800 w-4'
+                        : 'bg-gray-300 hover:bg-gray-400'
+                    }`}
+                    aria-label={`Go to popular slide ${index + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* New Section */}
@@ -615,3 +651,5 @@ export function HomePage() {
     </div>
   );
 }
+
+export { HomePage }
