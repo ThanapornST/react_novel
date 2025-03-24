@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bot, Home, FileText, PenSquare, Settings, Menu, X, LogOut, ChevronLeft, ChevronRight, Volume2, Play } from 'lucide-react';
+import { Bot, Home, FileText, PenSquare, Settings, Menu, X, LogOut, ChevronLeft, ChevronRight, Volume2, Play, Search } from 'lucide-react';
 import { auth } from '../lib/firebase';
 import { User } from 'firebase/auth';
 
@@ -14,6 +14,7 @@ export function HomePage() {
   const [currentNewSectionSlide, setCurrentNewSectionSlide] = useState(0);
   const [playingAudio, setPlayingAudio] = useState<number | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Categories
   const categories = [
@@ -200,6 +201,12 @@ export function HomePage() {
   const prevNewSectionSlide = () => {
     setCurrentNewSectionSlide((prev) => (prev - 1 + totalNewSectionSlides) % totalNewSectionSlides);
   };
+
+  // Filter novels based on search query
+  const filteredNovels = [...novels, ...popularNovels, ...newSectionNovels].filter(novel => 
+    novel.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    novel.author.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   // Basic Novel Card Component
   const BasicNovelCard = ({ novel }: { novel: any }) => (
@@ -467,7 +474,46 @@ export function HomePage() {
             {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
 
-          {/* Login Button in Header */}
+          {/* Search Bar */}
+          {user && (
+            <div className="relative ml-auto w-full max-w-md">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="ค้นหานิยาย..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                />
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              </div>
+              {searchQuery && (
+                <div className="absolute left-0 right-0 top-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto">
+                  {filteredNovels.length > 0 ? (
+                    <div className="p-2 grid grid-cols-1 gap-4">
+                      {filteredNovels.map(novel => (
+                        <div key={novel.id} className="flex items-center gap-4 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                          <div className="w-16 h-20 rounded-lg overflow-hidden bg-gray-100">
+                            <img src={novel.cover} alt={novel.title} className="w-full h-full object-cover" />
+                          </div>
+                          <div>
+                            <h3 className="font-medium text-gray-900">{novel.title}</h3>
+                            <p className="text-sm text-gray-500">โดย {novel.author}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center text-gray-500">
+                      ไม่พบผลการค้นหา
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Login Button for non-authenticated users */}
           {!user && (
             <button
               onClick={handleLoginClick}
@@ -480,176 +526,180 @@ export function HomePage() {
 
         {/* Main Content Area */}
         <main className="p-4 lg:p-8">
-          {/* Banner Carousel */}
-          <div className="relative rounded-xl overflow-hidden mb-8">
-            <div className="relative w-full h-[200px] lg:h-[280px]">
-              {carouselItems.map((item, index) => (
-                <div
-                  key={index}
-                  className={`absolute inset-0 transition-opacity duration-500 ${
-                    currentSlide === index ? 'opacity-100' : 'opacity-0'
-                  }`}
-                >
-                  <img 
-                    src={item.image}
-                    alt={`Banner ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/30 flex items-center px-6 lg:px-12">
-                    <div className="text-white">
-                      <h1 className="text-2xl lg:text-3xl font-bold mb-4">{item.title}</h1>
-                      <button className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-6 py-2 rounded-full text-sm font-medium backdrop-blur-sm transition-all">
-                        {item.buttonText}
-                      </button>
+          {/* Only show main content if not searching */}
+          {!searchQuery ? (
+            <>
+              {/* Banner Carousel */}
+              <div className="relative rounded-xl overflow-hidden mb-8">
+                <div className="relative w-full h-[200px] lg:h-[280px]">
+                  {carouselItems.map((item, index) => (
+                    <div
+                      key={index}
+                      className={`absolute inset-0 transition-opacity duration-500 ${
+                        currentSlide === index ? 'opacity-100' : 'opacity-0'
+                      }`}
+                    >
+                      <img 
+                        src={item.image}
+                        alt={`Banner ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/30 flex items-center px-6 lg:px-12">
+                        <div className="text-white">
+                          <h1 className="text-2xl lg:text-3xl font-bold mb-4">{item.title}</h1>
+                          <button className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-6 py-2 rounded-full text-sm font-medium backdrop-blur-sm transition-all">
+                            {item.buttonText}
+                          </button>
+                        </div>
+                      </div>
                     </div>
+                  ))}
+                </div>
+                {/* Carousel Navigation */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                  {carouselItems.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => goToSlide(index)}
+                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                        currentSlide === index 
+                          ? 'bg-white w-4' 
+                          : 'bg-white/50 hover:bg-white/75'
+                      }`}
+                      aria-label={`Go to slide ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Category Cards */}
+              <div className="grid grid-cols-3 gap-4 mb-8">
+                <div className="relative h-24 rounded-xl overflow-hidden bg-gradient-to-r from-orange-400 to-orange-500 hover:shadow-lg transition-shadow duration-200">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-white text-lg font-medium">นิยายเสียง</span>
                   </div>
                 </div>
-              ))}
-            </div>
-            {/* Carousel Navigation */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-              {carouselItems.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => goToSlide(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    currentSlide === index 
-                      ? 'bg-white w-4' 
-                      : 'bg-white/50 hover:bg-white/75'
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Category Cards */}
-          <div className="grid grid-cols-3 gap-4 mb-8">
-            <div className="relative h-24 rounded-xl overflow-hidden bg-gradient-to-r from-orange-400 to-orange-500 hover:shadow-lg transition-shadow duration-200">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-white text-lg font-medium">นิยายเสียง</span>
-              </div>
-            </div>
-            <div className="relative h-24 rounded-xl overflow-hidden bg-gradient-to-r from-blue-400 to-blue-500 hover:shadow-lg transition-shadow duration-200">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-white text-lg font-medium">พอดแคสต์</span>
-              </div>
-            </div>
-            <div className="relative h-24 rounded-xl overflow-hidden bg-gradient-to-r from-purple-400 to-purple-500 hover:shadow-lg transition-shadow duration-200">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-white text-lg font-medium">นิยาย</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Recommended Section */}
-          <CarouselSection
-            title="แนะนำ"
-            items={novels}
-            currentSlideIndex={currentNovelSlide}
-            totalSlides={totalNovelSlides}
-            onPrev={prevNovelSlide}
-            onNext={nextNovelSlide}
-            onSlideChange={goToNovelSlide}
-            renderItem={(novel) => <BasicNovelCard key={novel.id} novel={novel} />}
-          />
-
-          {/* Popular Section */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-medium">ยอดนิยม</h2>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={prevPopularSlide}
-                  className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                >
-                  <ChevronLeft size={20} />
-                </button>
-                <button
-                  onClick={nextPopularSlide}
-                  className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                >
-                  <ChevronRight size={20} />
-                </button>
-              </div>
-            </div>
-            
-            {/* Categories */}
-            <div className="flex gap-2 overflow-x-auto pb-4 mb-6 scrollbar-hide">
-              {categories.map(category => (
-                <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
-                  className={`px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${
-                    selectedCategory === category.id
-                      ? 'bg-black text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  {category.name}
-                </button>
-              ))}
-            </div>
-
-            <div className="relative overflow-hidden">
-              <div
-                className="flex transition-transform duration-500 ease-in-out"
-                style={{
-                  transform: `translateX(-${currentPopularSlide * 100}%)`,
-                }}
-              >
-                {Array.from({ length: totalPopularSlides }).map((_, slideIndex) => (
-                  <div
-                    key={slideIndex}
-                    className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 min-w-full"
-                  >
-                    {popularNovels
-                      .slice(
-                        slideIndex * itemsPerSlide,
-                        (slideIndex + 1) * itemsPerSlide
-                      )
-                      .map((novel) => (
-                        <NovelCardWithAudio
-                          key={novel.id}
-                          novel={novel}
-                          isPlaying={playingAudio === novel.id}
-                        />
-                      ))}
+                <div className="relative h-24 rounded-xl overflow-hidden bg-gradient-to-r from-blue-400 to-blue-500 hover:shadow-lg transition-shadow duration-200">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-white text-lg font-medium">พอดแคสต์</span>
                   </div>
-                ))}
+                </div>
+                <div className="relative h-24 rounded-xl overflow-hidden bg-gradient-to-r from-purple-400 to-purple-500 hover:shadow-lg transition-shadow duration-200">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-white text-lg font-medium">นิยาย</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-center gap-2 mt-4">
-                {Array.from({ length: totalPopularSlides }).map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => goToPopularSlide(index)}
-                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                      currentPopularSlide === index
-                        ? 'bg-gray-800 w-4'
-                        : 'bg-gray-300 hover:bg-gray-400'
-                    }`}
-                    aria-label={`Go to popular slide ${index + 1}`}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
 
-          {/* New Section */}
-          <CarouselSection
-            title="โปรโมท"
-            items={newSectionNovels}
-            currentSlideIndex={currentNewSectionSlide}
-            totalSlides={totalNewSectionSlides}
-            onPrev={prevNewSectionSlide}
-            onNext={nextNewSectionSlide}
-            onSlideChange={goToNewSectionSlide}
-            renderItem={(novel) => <BasicNovelCard key={novel.id} novel={novel} />}
-          />
+              {/* Recommended Section */}
+              <CarouselSection
+                title="แนะนำ"
+                items={novels}
+                currentSlideIndex={currentNovelSlide}
+                totalSlides={totalNovelSlides}
+                onPrev={prevNovelSlide}
+                onNext={nextNovelSlide}
+                onSlideChange={goToNovelSlide}
+                renderItem={(novel) => <BasicNovelCard key={novel.id} novel={novel} />}
+              />
+
+              {/* Popular Section */}
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-medium">ยอดนิยม</h2>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={prevPopularSlide}
+                      className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    <button
+                      onClick={nextPopularSlide}
+                      className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Categories */}
+                <div className="flex gap-2 overflow-x-auto pb-4 mb-6 scrollbar-hide">
+                  {categories.map(category => (
+                    <button
+                      key={category.id}
+                      onClick={() => setSelectedCategory(category.id)}
+                      className={`px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${
+                        selectedCategory === category.id
+                          ? 'bg-black text-white'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {category.name}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="relative overflow-hidden">
+                  <div
+                    className="flex transition-transform duration-500 ease-in-out"
+                    style={{
+                      transform: `translateX(-${currentPopularSlide * 100}%)`,
+                    }}
+                  >
+                    {Array.from({ length: totalPopularSlides }).map((_, slideIndex) => (
+                      <div
+                        key={slideIndex}
+                        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 min-w-full"
+                      >
+                        {popularNovels
+                          .slice(
+                            slideIndex * itemsPerSlide,
+                            (slideIndex + 1) * itemsPerSlide
+                          )
+                          .map((novel) => (
+                            <NovelCardWithAudio
+                              key={novel.id}
+                              novel={novel}
+                              isPlaying={playingAudio === novel.id}
+                            />
+                          ))}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-center gap-2 mt-4">
+                    {Array.from({ length: totalPopularSlides }).map((_, index) => (
+                      <button
+                        
+                        key={index}
+                        onClick={() => goToPopularSlide(index)}
+                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                          currentPopularSlide === index
+                            ? 'bg-gray-800 w-4'
+                            : 'bg-gray-300 hover:bg-gray-400'
+                        }`}
+                        aria-label={`Go to popular slide ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* New Section */}
+              <CarouselSection
+                title="โปรโมท"
+                items={newSectionNovels}
+                currentSlideIndex={currentNewSectionSlide}
+                totalSlides={totalNewSectionSlides}
+                onPrev={prevNewSectionSlide}
+                onNext={nextNewSectionSlide}
+                onSlideChange={goToNewSectionSlide}
+                renderItem={(novel) => <BasicNovelCard key={novel.id} novel={novel} />}
+              />
+            </>
+          ) : null}
         </main>
       </div>
     </div>
   );
 }
-
-export { HomePage }
