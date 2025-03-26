@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bot, Home, FileText, PenSquare, Settings, Menu, X, LogOut, ChevronLeft, ChevronRight, Volume2, Play, Search } from 'lucide-react';
 import { auth } from '../lib/firebase';
@@ -421,7 +421,10 @@ export function HomePage() {
           {/* Upload Button - Only show when logged in */}
           {user && (
             <div className="px-4 mb-4">
-              <button className="w-full bg-black text-white rounded-full py-2 text-sm font-medium hover:bg-black/90 transition-colors flex items-center justify-center gap-2">
+              <button 
+                onClick={() => navigate('/upload')}
+                className="w-full bg-black text-white rounded-full py-2 text-sm font-medium hover:bg-black/90 transition-colors flex items-center justify-center gap-2"
+              >
                 <FileText size={16} />
                 โปรเจคใหม่
               </button>
@@ -669,8 +672,8 @@ export function HomePage() {
                   </div>
                   <div className="flex justify-center gap-2 mt-4">
                     {Array.from({ length: totalPopularSlides }).map((_, index) => (
+                      
                       <button
-                        
                         key={index}
                         onClick={() => goToPopularSlide(index)}
                         className={`w-2 h-2 rounded-full transition-all duration-300 ${
