@@ -15,6 +15,12 @@ export function HomePage() {
   const [playingAudio, setPlayingAudio] = useState<number | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // Add the missing toggleSidebar function
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
 
   // Categories
   const categories = [
@@ -156,10 +162,6 @@ export function HomePage() {
     } catch (error) {
       console.error('Logout error:', error);
     }
-  };
-
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
   };
 
   const goToSlide = (index: number) => {
@@ -469,7 +471,7 @@ export function HomePage() {
       {/* Main Content */}
       <div className="flex-1">
         {/* Header */}
-        <header className="bg-white border-b border-gray-200 py-4 px-8 flex items-center justify-between">
+        <header className="bg-white border-b border-gray-200 py-3.5 px-8 flex items-center justify-between">
           <button 
             onClick={toggleSidebar}
             className="lg:hidden text-gray-500 hover:text-gray-700 transition-colors"
@@ -479,39 +481,54 @@ export function HomePage() {
 
           {/* Search Bar */}
           {user && (
-            <div className="relative ml-auto w-full max-w-md">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="ค้นหานิยาย..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
-                />
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              </div>
-              {searchQuery && (
-                <div className="absolute left-0 right-0 top-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto">
-                  {filteredNovels.length > 0 ? (
-                    <div className="p-2 grid grid-cols-1 gap-4">
-                      {filteredNovels.map(novel => (
-                        <div key={novel.id} className="flex items-center gap-4 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
-                          <div className="w-16 h-20 rounded-lg overflow-hidden bg-gray-100">
-                            <img src={novel.cover} alt={novel.title} className="w-full h-full object-cover" />
-                          </div>
-                          <div>
-                            <h3 className="font-medium text-gray-900">{novel.title}</h3>
-                            <p className="text-sm text-gray-500">โดย {novel.author}</p>
-                          </div>
+            <div className="relative ml-auto">
+              {isSearchOpen ? (
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="ค้นหานิยาย..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-[300px] pl-10 pr-4 py-1.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    autoFocus
+                    onBlur={() => {
+                      if (!searchQuery) {
+                        setIsSearchOpen(false);
+                      }
+                    }}
+                  />
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  {searchQuery && (
+                    <div className="absolute left-0 right-0 top-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto z-50">
+                      {filteredNovels.length > 0 ? (
+                        <div className="p-2 grid grid-cols-1 gap-4">
+                          {filteredNovels.map(novel => (
+                            <div key={novel.id} className="flex items-center gap-4 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                              <div className="w-16 h-20 rounded-lg overflow-hidden bg-gray-100">
+                                <img src={novel.cover} alt={novel.title} className="w-full h-full object-cover" />
+                              </div>
+                              <div>
+                                <h3 className="font-medium text-gray-900">{novel.title}</h3>
+                                <p className="text-sm text-gray-500">โดย {novel.author}</p>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-4 text-center text-gray-500">
-                      ไม่พบผลการค้นหา
+                      ) : (
+                        <div className="p-4 text-center text-gray-500">
+                          ไม่พบผลการค้นหา
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
+              ) : (
+                <button
+                  onClick={() => setIsSearchOpen(true)}
+                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <Search size={20} />
+                </button>
               )}
             </div>
           )}
@@ -519,11 +536,12 @@ export function HomePage() {
           {/* Login Button for non-authenticated users */}
           {!user && (
             <button
-              onClick={handleLoginClick}
-              className="ml-auto bg-black text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-black/90 transition-colors"
-            >
-              เข้าสู่ระบบ
-            </button>
+  onClick={handleLoginClick}
+  className="ml-auto bg-black text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-black/90 transition-colors"
+>
+  เข้าสู่ระบบ
+</button>
+
           )}
         </header>
 
@@ -672,7 +690,6 @@ export function HomePage() {
                   </div>
                   <div className="flex justify-center gap-2 mt-4">
                     {Array.from({ length: totalPopularSlides }).map((_, index) => (
-                      
                       <button
                         key={index}
                         onClick={() => goToPopularSlide(index)}
