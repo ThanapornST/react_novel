@@ -537,7 +537,7 @@ export function HomePage() {
           {!user && (
             <button
   onClick={handleLoginClick}
-  className="ml-auto bg-black text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-black/90 transition-colors"
+  className="ml-auto bg-black text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-black/90 transition-colors"
 >
   เข้าสู่ระบบ
 </button>
